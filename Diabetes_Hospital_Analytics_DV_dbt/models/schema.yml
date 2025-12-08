@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: h_patient
+    description: "Hub for patients"
+    columns:
+      - name: patient_nbr
+        tests:
+          - not_null
+          - unique
+
+  - name: l_patient_encounter
+    description: "Link between patients and encounters"
+    columns:
+      - name: h_patient_id
+        tests:
+          - not_null
+      - name: h_encounter_id
+        tests:
+          - not_null
+
+  - name: s_patient_details
+    description: "Patient attributes satellite"
+    columns:
+      - name: gender
+        tests:
+          - not_null

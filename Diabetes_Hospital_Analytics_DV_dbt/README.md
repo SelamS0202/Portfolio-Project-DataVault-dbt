@@ -1,133 +1,180 @@
-Diabetes Hospital Analytics Using Data Vault, dbt, and DuckDB
-End-to-End Healthcare Analytics Engineering Project
 
-This repository contains an end-to-end analytics engineering project built using:
+# Diabetes Hospital Analytics Using Data Vault 2.0, dbt & DuckDB
 
-Data Vault 2.0 (Hubs, Links, Satellites)
+## End-to-End Healthcare Analytics Engineering Project
 
-dbt Core for transformations, lineage & testing
+An end-to-end analytics engineering project that transforms hospital encounter data into structured analytical datasets using **Data Vault 2.0, dbt Core, DuckDB, and Power BI**.
 
-DuckDB as the analytical engine
+The project demonstrates an end-to-end data transformation workflow, from raw healthcare data ingestion and staging to Data Vault modelling, analytical data marts, and business intelligence reporting.
 
-Power BI (Part 2) for visualizations
+## 🛠️ Technology Stack
 
-The dataset used is the publicly available Kaggle dataset:
-“Diabetes 130-US hospitals for years 1999–2008”.
+| Technology | Purpose |
+|---|---|
+| SQL | Data transformation and analytical queries |
+| dbt Core | Data modelling, transformations, lineage, and testing |
+| DuckDB | Analytical database engine |
+| Data Vault 2.0 | Enterprise data warehouse modelling |
+| Power BI | Data visualisation and reporting |
+| GitHub | Version control and project documentation |
 
-🧭 Project Architecture
-Raw CSV → dbt Staging (Silver) → Data Vault (Gold) → Marts → Power BI Dashboards
+## 📊 Dataset
 
-Staging Layer
+The project uses the publicly available **[Diabetes 130-US Hospitals for Years 1999–2008](https://www.kaggle.com/datasets/brandao/diabetes)** dataset from Kaggle.
 
-Performed:
+The dataset contains hospital encounter records for diabetic patients across 130 US hospitals over a ten-year period.
 
-Type casting
+It provides information on patient demographics, hospital admissions, diagnoses, length of stay, and other encounter-related attributes.
 
-Standardization of missing values
+## 🏗️ Project Architecture
 
-Column renaming and cleaning
+The project follows a layered data architecture, transforming raw hospital encounter data into analytical data marts for downstream reporting.
 
-Preparation for Data Vault modeling
+**Data Flow:**
 
-Data Vault 2.0 Layer
+```text
+Raw CSV Data
+     |
+     ▼
+Staging Layer (Silver)
+     |
+     ▼
+Data Vault 2.0 Layer (Gold)
+     |
+     ▼
+Analytical Data Marts
+     |
+     ▼
+Power BI Dashboards
+```
 
-Includes:
+### 1. Staging Layer
 
-Hubs – business keys
+The staging layer prepares and standardises raw hospital encounter data before loading it into the Data Vault.
 
-Links – relationships
+Key transformations include:
 
-Satellites – descriptive attributes
+- Data type casting and standardisation.
+- Handling and standardisation of missing values.
+- Column renaming and data cleaning.
+- Preparation of source data for Data Vault modelling.
 
-This layer ensures:
+**Model:** `stg_hospitals_data.sql`
 
-Auditability
+### 2. Data Vault 2.0 Layer
 
-Scalability
+The Data Vault layer organises healthcare data using Hubs, Links, and Satellites to separate business keys, relationships, and descriptive attributes.
 
-Historical tracking
+**Hubs – Business Entities**
 
-Separation of keys and context
+Define the core business entities and their unique business keys.
 
-Marts Layer
+- `h_patient.sql`
+- `h_encounter.sql`
+- `h_diagnosis.sql`
 
-Analytical models designed to answer key business questions about patient encounters, length of stay, diagnoses, and case complexity.
+**Links – Relationships**
 
-Business Questions Answered
+Capture relationships between business entities.
 
-Which patients have the most encounters and hospital days?
+- `l_patient_encounter.sql`
+- `l_encounter_diagnosis.sql`
 
-How does length of stay vary by admission type and medical specialty?
+**Satellites – Descriptive Attributes**
 
-How many diagnoses do patients accumulate over time?
+Store descriptive attributes and contextual information associated with business entities.
 
-Which encounters are the most complex based on diagnoses and length of stay?
+- `s_patient_details.sql`
+- `s_encounter_details.sql`
+- `s_diagnosis.sql`
 
-Each question is implemented as a dbt model in the marts folder using SQL window functions.
+The Data Vault approach provides a foundation for:
 
-Analytical Models (dbt Marts)
-1. Patient Encounter Ranking
+- Historical data tracking.
+- Auditability and traceability.
+- Separation of business keys and descriptive attributes.
+- Flexible and scalable data integration.
 
-Ranks patients by:
+### 3. Analytical Data Marts
 
-number of encounters
+The marts layer transforms Data Vault data into business-oriented analytical datasets.
 
-total hospital days
+These models use SQL transformations and window functions to answer key healthcare analytics questions.
 
-Uses:
+## 📈 Business Questions & Analytical Models
 
-RANK()
+The analytical layer addresses the following business questions:
 
-COUNT()
+- Which patients have the highest number of hospital encounters and total hospital days?
+- How does the average length of stay vary by admission type and medical specialty?
+- How do diagnoses accumulate over time for individual patients?
+- Which hospital encounters are the most complex based on diagnosis counts and length of stay?
 
-SUM()
+### 1. Patient Encounter Ranking
 
-File: models/marts/patient_encounter_ranking.sql
+**File:** `models/marts/patient_ranking.sql`
 
-2. Hospital Stay Patterns
+Ranks patients based on their hospital utilisation.
 
-Computes average LOS by:
+Key metrics:
 
-admission type
+- Total number of hospital encounters.
+- Total hospital days.
 
-medical specialty
+SQL techniques:
 
-Uses:
+- `RANK()`
+- `COUNT()`
+- `SUM()`
 
-AVG() OVER(PARTITION BY …)
+### 2. Hospital Stay Patterns
 
-File: models/marts/stay_patterns.sql
+**File:** `models/marts/encounter_patterns.sql`
 
-3. Cumulative Diagnosis Trend
+Analyses average hospital length of stay across different admission types and medical specialties.
 
-Tracks how diagnoses accumulate over time for each patient.
+SQL techniques:
 
-Uses:
+- `AVG()`
+- Window functions.
+- `PARTITION BY`.
 
-SUM() OVER(PARTITION BY … ORDER BY …)
+### 3. Diagnosis Trends
 
-File: models/marts/diagnosis_cumulative_trend.sql
+**File:** `models/marts/diagnosis_trends.sql`
 
-4. Encounter Complexity
+Analyses the cumulative number of diagnoses associated with individual patients over time.
 
-Ranks encounters by:
+SQL techniques:
 
-number of diagnoses
+- `SUM()`
+- Window functions.
+- `PARTITION BY`.
+- `ORDER BY`.
 
-time in hospital
+### 4. Encounter Complexity
 
-File: models/marts/encounter_complexity.sql
+**File:** `models/marts/encounters_by_number_of_diagnoses.sql`
 
-🏗️ Repository Structure
+Evaluates hospital encounter complexity using:
+
+- Number of diagnoses recorded per encounter.
+- Length of hospital stay.
+
+The resulting dataset supports the identification and comparison of encounters with higher diagnosis counts and longer hospital stays.
+
+## 📁 Repository Structure
+
+```text
 diabetes_hospital_analytics_dv_dbt/
 │
 ├── README.md
 │
 ├── docs/
-│   ├── dbt_dag.png
-│   
+│   └── dbt_dag.png
 │
 ├── models/
+│   │
 │   ├── staging/
 │   │   └── stg_hospitals_data.sql
 │   │
@@ -152,29 +199,118 @@ diabetes_hospital_analytics_dv_dbt/
 │   │   ├── encounters_by_number_of_diagnoses.sql
 │   │   └── patient_ranking.sql
 │   │
-│   └── schema.yml
+│   ├── schema.yml
+│   └── sources.yml
 │
-├── sources.yml
-│
-└── powerbi/ (Part 2)
+└── powerbi/
     ├── dashboard_screenshots/
     └── pbix_notes.md
+```
 
-How to Run the Project Locally
-1. Install dbt & DuckDB
+## ⚙️ How to Run the Project Locally
+
+### Prerequisites
+
+- Python 3.9 or later.
+- dbt Core.
+- dbt-duckdb adapter.
+- DuckDB database.
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-github-repository-url>
+
+cd diabetes_hospital_analytics_dv_dbt
+```
+
+### 2. Install Dependencies
+
+Install dbt Core and the DuckDB adapter:
+
+```bash
 pip install dbt-core dbt-duckdb
+```
 
-2. Initialize DuckDB
+### 3. Configure DuckDB
 
-Place your DuckDB file in:
+Place your DuckDB database file at the following location:
 
-/duckdb/healthcarebi.duckdb
+```text
+duckdb/healthcarebi.duckdb
+```
 
-3. Run dbt
+Ensure that the database path matches the configuration in your `profiles.yml` file.
+
+### 4. Configure dbt
+
+Configure your DuckDB connection in the dbt profile (`profiles.yml`) and ensure that the profile name matches the project configuration in `dbt_project.yml`.
+
+### 5. Run dbt Commands
+
+**Validate the connection:**
+
+```bash
 dbt debug
-dbt run
-dbt test
+```
 
-4. Generate Documentation
+**Execute data transformations:**
+
+```bash
+dbt run
+```
+
+**Run data quality tests:**
+
+```bash
+dbt test
+```
+
+### 6. Generate dbt Documentation
+
+Generate project documentation and the model lineage graph:
+
+```bash
 dbt docs generate
+```
+
+Launch the documentation locally:
+
+```bash
 dbt docs serve
+```
+
+The dbt documentation provides an interactive view of model dependencies, lineage, and project metadata.
+
+## 📊 Power BI Dashboard
+
+**Part 2 – Healthcare Analytics Visualisation**
+
+Power BI is used to visualise the curated analytical datasets and provide insights into hospital encounters, diagnosis trends, patient utilisation, and length of stay.
+
+The `powerbi/` directory contains:
+
+- Dashboard screenshots.
+- Supporting Power BI documentation.
+
+*Dashboard development and visualisation are documented separately as Part 2 of this project.*
+
+## 🎯 Key Skills Demonstrated
+
+- End-to-end analytics engineering.
+- Data Vault 2.0 data modelling.
+- dbt-based ELT transformations.
+- SQL analytical queries and window functions.
+- Data cleaning and standardisation.
+- Data quality testing.
+- Data lineage and documentation.
+- Analytical data mart development.
+- Power BI reporting and visualisation.
+
+## 👤 Author
+
+**Selam**
+
+Data Engineer | Data Warehousing | Business Intelligence
+
+- Medium: [Row by Row: BI & Data Engineering]

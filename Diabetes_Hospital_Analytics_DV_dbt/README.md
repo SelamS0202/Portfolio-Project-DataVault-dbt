@@ -203,7 +203,7 @@ diabetes_hospital_analytics_dv_dbt/
 │   └── sources.yml
 │
 └── powerbi/
-    ├── dashboard_screenshots/
+    ├── dashboard_screenshot/
     └── pbix_notes.md
 ```
 
